@@ -11,34 +11,36 @@
 
 int main(int argc, char* argv[]) {
 
-	SDL_Window *window;                    // Declare a pointer
+	SDL_Window *window;
 
-	SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
+	SDL_Init(SDL_INIT_VIDEO);
 
-										// Create an application window with the following settings:
+	// Create an application window
 	window = SDL_CreateWindow(
-		"A Software Renderer",                  // window title
-		SDL_WINDOWPOS_UNDEFINED,           // initial x position
-		SDL_WINDOWPOS_UNDEFINED,           // initial y position
-		1000,                               // width, in pixels
-		600,                               // height, in pixels
-		SDL_WINDOW_OPENGL                  // flags - see below
+		"A Software Renderer",
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		1000,
+		600,
+		SDL_WINDOW_OPENGL
 		);
 
 	// Check that the window was successfully created
 	if (window == NULL) {
-		// In the case that the window could not be made...
 		printf("Could not create window: %s\n", SDL_GetError());
 		return 1;
 	}
 
+	// We're using a basic SDL renderer to put our framebuffer on the screen
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+
+	// Create a scene and set the camera up
 	Scene* myScene = new Scene(1000, 600);
-	//myScene->cameraPosition = Maths::Vec3f(0.0f, 0.0f,-8.0f);
 	myScene->cameraPosition = Maths::Vec3f(-4.f, 4.f, -6.f);
 	myScene->cameraRotation = Maths::Vec3f(30.f, -45.f, 0.f);
 
+	// Make a monkey object, loading it's model and creating a shader for it.
 	Model* monkeyModel = new Model("Assets/monkey.obj");
 	SceneObject* monkey = new SceneObject(monkeyModel);
 	FlatShader* monkeyShader = new FlatShader();
@@ -48,13 +50,18 @@ int main(int argc, char* argv[]) {
 
 	Model* fireHydrantModel = new Model("Assets/Chest.obj");
 	SceneObject* fireHydrant = new SceneObject(fireHydrantModel);
-	fireHydrant->shader = new SmoothShader();
+	fireHydrant->shader = new FlatShader();
 	fireHydrant->position = Maths::Vec3f(0, 0, -2);
 	fireHydrant->rotation = Maths::Vec3f(0, 5, 0);
 	fireHydrant->scale = Maths::Vec3f(3, 3, 3);
 	myScene->AddObject(fireHydrant);
 
+	// Render the scene and make a fullscreen texture from it that we can put on the screen.
 	SDL_Texture* fullscreenTexture = SDL_CreateTextureFromSurface(renderer, myScene->Render());
+	SDL_RenderClear(renderer);
+	SDL_RenderCopy(renderer, fullscreenTexture, NULL, NULL);
+	SDL_RenderPresent(renderer);
+
 	while (true)
 	{
 		SDL_Event test_event;
@@ -70,16 +77,10 @@ int main(int argc, char* argv[]) {
 			default:
 				break;
 			}
-		}
-		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, fullscreenTexture, NULL, NULL);
-		SDL_RenderPresent(renderer);
+		}	
 	}
 
-	// Close and destroy the window
 	SDL_DestroyWindow(window);
-
-	// Clean up
 	SDL_Quit();
 	return 0;
 }

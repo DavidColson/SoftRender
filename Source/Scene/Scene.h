@@ -21,15 +21,16 @@ public:
 	float cameraFOV = 60.f;
 
 private:
-	// Screen width and height
 	int width;
 	int height;
 
+	// Render buffers
 	SDL_Surface* surf;
 	float* zBuffer;
 
 	std::vector<SceneObject*> objects;
 
+	// Calculate barycentric coordinates for a given point P inside a triangle defined by Poly, returning bcoords.
 	void Barycentric(Maths::Vec3f *poly, Maths::Vec3f* P, Maths::Vec3f* bcoords);
 
 	void DrawLine(SDL_Surface* surf, int x0, int y0, int x1, int y1, Uint32 Colour);

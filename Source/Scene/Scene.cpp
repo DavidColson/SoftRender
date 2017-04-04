@@ -27,14 +27,12 @@ Scene::Scene(int screenWidth, int screenHeight)
 
 	surf = SDL_CreateRGBSurface(0, width, height, 32, rmask, gmask, bmask, amask);
 
-	// Create the zBuffer data and set it to the lowest possible value
 	zBuffer = new float[surf->w * surf->h];
 }
 
 
 Scene::~Scene()
 {
-	// Free sceneobject memory
 	delete zBuffer;
 }
 
@@ -65,22 +63,26 @@ SDL_Surface* Scene::Render()
 	// TODO: Sort by model depth
 	for (SceneObject* o : objects)
 	{
-		// Prepare the MVP matrix
+		// Model Matrix, converts to world space
 		Maths::Mat4f scale = Maths::MakeScale(o->scale); 
 		Maths::Mat4f translate = Maths::MakeTranslate(o->position);
 		Maths::Mat4f rotate = Maths::MakeRotate(o->rotation);
 
+		// Move objects backward from the camera's position
 		Maths::Mat4f cameraTranslate = Maths::MakeTranslate(Maths::Vec3f(-cameraPosition.X, -cameraPosition.Y, -cameraPosition.Z));
 
+		// Get the camera's rotated basis vectors to rotate everything to camera space.
 		Maths::Vec3f Forward;
 		Maths::Vec3f Right;
 		Maths::Vec3f Up;
 		Maths::GetAxesFromRotation(cameraRotation, Forward, Right, Up);
 		Maths::Mat4f cameraRotate = Maths::MakeLookAt(Forward, Up);
 
-		Maths::Mat4f viewport = Maths::MakeViewport(surf->w, surf->h);
-
+		// Convert from camera space to perspective projection space
 		Maths::Mat4f projection = Maths::MakePerspective(surf->w, surf->h, 1, 10, cameraFOV);
+
+		// Convert from projection space (-1, 1) to viewport space
+		Maths::Mat4f viewport = Maths::MakeViewport(surf->w, surf->h);
 
 		Maths::Mat4f Model = translate * rotate * scale;
 		Maths::Mat4f MVP = viewport * projection * cameraRotate * cameraTranslate * Model;
@@ -91,11 +93,13 @@ SDL_Surface* Scene::Render()
 			Maths::Vec3f trianglePoints[3];
 			for (int j = 0; j < 3; j++)
 			{
+				// Prepare and run the vertex shader for all the vertices of this triangle
 				o->shader->MVP = MVP;
 				o->shader->M = cameraRotate * cameraTranslate * Model;
 				o->shader->model = o->model;
-
 				Maths::Vec4f pos = o->shader->Vertex(i, j);
+
+				// Perspective divide
 				pos = Maths::Vec4f(pos.X / pos.W, pos.Y / pos.W, pos.Z / pos.W, 1.0);
 				trianglePoints[j] = Maths::Vec3f(int(pos.X), int(pos.Y), int(pos.Z));
 			}
@@ -121,6 +125,7 @@ void Scene::Barycentric(Maths::Vec3f* poly, Maths::Vec3f* P, Maths::Vec3f* outbc
 
 void Scene::DrawTriangle(Shader* shader, Maths::Vec3f v1, Maths::Vec3f v2, Maths::Vec3f v3)
 {
+	// Calculate a bounding box for this triangle
 	Maths::Vec2f bbmin(surf->w, surf->h);
 	Maths::Vec2f bbmax(0, 0);
 	Maths::Vec2f clamp(surf->w, surf->h);
@@ -133,10 +138,12 @@ void Scene::DrawTriangle(Shader* shader, Maths::Vec3f v1, Maths::Vec3f v2, Maths
 		bbmax.X = std::min(clamp.X, std::max(bbmax.X, points[i].X));
 	}
 
+	// Looping over every pixel in the bounding box
 	Maths::Vec3f P;
 	Maths::Vec3f bc;
 	for (P.X = bbmin.X; P.X <= bbmax.X; P.X++) {
 		for (P.Y = bbmin.Y; P.Y <= bbmax.Y; P.Y++) {
+			// If any of the barycentric coordinates are negative, this pixel is not inside the triangle
 			Barycentric(points, &P, &bc);
 			if (bc.X < 0 || bc.Y < 0 || bc.Z < 0) continue;
 			P.Z = 0;
@@ -146,19 +153,18 @@ void Scene::DrawTriangle(Shader* shader, Maths::Vec3f v1, Maths::Vec3f v2, Maths
 			if (P.Y > surf->h - 1 || P.X > surf->w - 1) continue;
 
 			int id = int(P.X) + int(P.Y) * surf->w;
-			float zPixel = zBuffer[id];
-			
-			if (zPixel > P.Z)
+			if (zBuffer[id] > P.Z)
 			{
-				zBuffer[int(P.X) + int(P.Y) * surf->w] = P.Z;
+				zBuffer[id] = P.Z;
 
+				// Call the fragment shader for each pixel, giving it the barycentric coordinates so it can interpolate vertex data.
 				Maths::Vec3f cVec;
 				if (shader->Fragment(bc, cVec))
 				{
 					Uint32 colour = SDL_MapRGB(surf->format, cVec.X, cVec.Y, cVec.Z);
 					SetSurfacePixel(surf, P.X, P.Y, colour);
 				}
-				// Depth buffer 
+				// Visualise Depth buffer 
 				//SetSurfacePixel(surf, P.X, P.Y, SDL_MapRGB(surf->format, abs(P.Z)*1, abs(P.Z)*1, abs(P.Z)*1));
 			}
 		}

@@ -1,0 +1,8 @@
+Binaries/
+Intermediate/
+premake5.exe
+*.sln
+*.db
+*.opendb
+*.vcxproj
+*.filters

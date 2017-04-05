@@ -31,7 +31,9 @@ private:
 	std::vector<SceneObject*> objects;
 
 	// Calculate barycentric coordinates for a given point P inside a triangle defined by Poly, returning bcoords.
-	void Barycentric(Maths::Vec3f *poly, Maths::Vec3f* P, Maths::Vec3f* bcoords);
+	bool BarycentricTriangle(Maths::Vec3f *poly);
+	void BarycentricPoint(Maths::Vec3f *poly, Maths::Vec3f* P, Maths::Vec3f* bcoords);
+	double det;
 
 	void DrawLine(SDL_Surface* surf, int x0, int y0, int x1, int y1, Uint32 Colour);
 	void DrawTriangle(Shader* shader, Maths::Vec3f v1, Maths::Vec3f v2, Maths::Vec3f v3);

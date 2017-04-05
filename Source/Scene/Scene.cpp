@@ -109,17 +109,20 @@ SDL_Surface* Scene::Render()
 	
 	return surf;
 }
-
-void Scene::Barycentric(Maths::Vec3f* poly, Maths::Vec3f* P, Maths::Vec3f* outbcoords)
+bool Scene::BarycentricTriangle(Maths::Vec3f* poly)
 {
-	double det = (poly[1].Y - poly[2].Y) * (poly[0].X - poly[2].X) + (poly[2].X - poly[1].X) * (poly[0].Y - poly[2].Y);
+	det = 1.0 / ((poly[1].Y - poly[2].Y) * (poly[0].X - poly[2].X) + (poly[2].X - poly[1].X) * (poly[0].Y - poly[2].Y));
 	if (det == 0)
 	{
-		outbcoords->X = -1.0;
-		return;
+		return false;
 	}
-	outbcoords->X = ((poly[1].Y - poly[2].Y) * (P->X - poly[2].X) + (poly[2].X - poly[1].X) * (P->Y - poly[2].Y)) / det;
-	outbcoords->Y = ((poly[2].Y - poly[0].Y) * (P->X - poly[2].X) + (poly[0].X - poly[2].X) * (P->Y - poly[2].Y)) / det;
+	return true;
+}
+
+void Scene::BarycentricPoint(Maths::Vec3f* poly, Maths::Vec3f* P, Maths::Vec3f* outbcoords)
+{
+	outbcoords->X = ((poly[1].Y - poly[2].Y) * (P->X - poly[2].X) + (poly[2].X - poly[1].X) * (P->Y - poly[2].Y)) * det;
+	outbcoords->Y = ((poly[2].Y - poly[0].Y) * (P->X - poly[2].X) + (poly[0].X - poly[2].X) * (P->Y - poly[2].Y)) * det;
 	outbcoords->Z = 1 - outbcoords->X - outbcoords->Y;
 }
 
@@ -141,10 +144,14 @@ void Scene::DrawTriangle(Shader* shader, Maths::Vec3f v1, Maths::Vec3f v2, Maths
 	// Looping over every pixel in the bounding box
 	Maths::Vec3f P;
 	Maths::Vec3f bc;
+	if (!BarycentricTriangle(points))
+	{
+		return;
+	}
 	for (P.X = bbmin.X; P.X <= bbmax.X; P.X++) {
 		for (P.Y = bbmin.Y; P.Y <= bbmax.Y; P.Y++) {
 			// If any of the barycentric coordinates are negative, this pixel is not inside the triangle
-			Barycentric(points, &P, &bc);
+			BarycentricPoint(points, &P, &bc);
 			if (bc.X < 0 || bc.Y < 0 || bc.Z < 0) continue;
 			P.Z = 0;
 			P.Z += points[0].Z * bc.X;

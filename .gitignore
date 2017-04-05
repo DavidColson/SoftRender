@@ -6,3 +6,4 @@ premake5.exe
 *.opendb
 *.vcxproj
 *.filters
+*.suo

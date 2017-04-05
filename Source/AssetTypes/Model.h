@@ -8,14 +8,14 @@ class Model
 public:
 	Model(const char* filename);
 
-	Maths::Vec3f Model::vert(int iface, int nthvert);
-	Maths::Vec2f Model::uv(int iface, int nthvert);
-	Maths::Vec3f Model::normal(int iface, int nthvert);
+	vec3 Model::vert(int iface, int nthvert);
+	vec2 Model::uv(int iface, int nthvert);
+	vec3 Model::normal(int iface, int nthvert);
 
 private:
-	std::vector<Maths::Vec3f> verts;
-	std::vector<std::vector<Maths::Vec3f>> faces;
-	std::vector<Maths::Vec3f> normals;
-	std::vector<Maths::Vec2f> uvs;
+	std::vector<vec3> verts;
+	std::vector<std::vector<vec3>> faces;
+	std::vector<vec3> normals;
+	std::vector<vec2> uvs;
 };
 

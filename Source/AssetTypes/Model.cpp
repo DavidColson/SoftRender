@@ -24,34 +24,34 @@ Model::Model(const char* filename)
 		char trash;
 		if (!line.compare(0, 2, "v ")) {
 			iss >> trash;
-			Maths::Vec3f vertex;
-			iss >> vertex.X;
-			iss >> vertex.Y;
-			iss >> vertex.Z;
-			vertex.Z = -vertex.Z;
+			vec3 vertex;
+			iss >> vertex.x;
+			iss >> vertex.y;
+			iss >> vertex.z;
+			vertex.z = -vertex.z;
 			verts.push_back(vertex);
 		}
 		else if (!line.compare(0, 3, "vn "))
 		{
 			iss >> trash >> trash;
-			Maths::Vec3f norm;
-			iss >> norm.X;
-			iss >> norm.Y;
-			iss >> norm.Z;
-			normals.push_back(Maths::Normalize(norm));
+			vec3 norm;
+			iss >> norm.x;
+			iss >> norm.y;
+			iss >> norm.z;
+			normals.push_back(norm.normalise());
 		}
 		else if (!line.compare(0, 3, "vt "))
 		{
 			iss >> trash >> trash;
-			Maths::Vec2f uv;
-			iss >> uv.X;
-			iss >> uv.Y;
+			vec2 uv;
+			iss >> uv.x;
+			iss >> uv.y;
 			uvs.push_back(uv);
 		}
 		else if (!line.compare(0, 2, "f "))
 		{
-			std::vector<Maths::Vec3f> f;
-			Maths::Vec3f vert;
+			std::vector<vec3> f;
+			vec3 vert;
 			iss >> trash;
 			while (iss >> vert[0] >> trash >> vert[1] >> trash >> vert[2])
 			{
@@ -64,15 +64,15 @@ Model::Model(const char* filename)
 }
 
 
-Maths::Vec3f Model::vert(int iface, int nthvert) {
+vec3 Model::vert(int iface, int nthvert) {
 	return verts[faces[iface][nthvert][0]];
 }
 
-Maths::Vec2f Model::uv(int iface, int nthvert) {
+vec2 Model::uv(int iface, int nthvert) {
 	return uvs[faces[iface][nthvert][1]];
 }
 
-Maths::Vec3f Model::normal(int iface, int nthvert) {
+vec3 Model::normal(int iface, int nthvert) {
 	int idx = faces[iface][nthvert][2];
 	return normals[idx];
 }

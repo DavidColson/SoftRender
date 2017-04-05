@@ -11,25 +11,25 @@ mat4 MakeScale(vec3 scaling)
 	ret[0] = vec4(scaling.x, 0.f, 0.f, 0.f);
 	ret[1] = vec4(0.f, scaling.y, 0.f, 0.f);
 	ret[2] = vec4(0.f, 0.f, scaling.y, 0.f);
-	ret[3] = vec4(0.f, 0.f, 0.f, 0.f);
+	ret[3] = vec4(0.f, 0.f, 0.f, 1.f);
 	return ret;
 }
 
 mat4 MakeTranslate(vec3 translate)
 {
 	mat4 ret = mat4::identity();
-	ret[0] = vec4(0.f, 0.f, 0.f, translate.x);
-	ret[1] = vec4(0.f, 0.f, 0.f, translate.y);
-	ret[2] = vec4(0.f, 0.f, 0.f, translate.z);
-	ret[3] = vec4(0.f, 0.f, 0.f, 0.f);
+	ret[0] = vec4(1.f, 0.f, 0.f, translate.x);
+	ret[1] = vec4(0.f, 1.f, 0.f, translate.y);
+	ret[2] = vec4(0.f, 0.f, 1.f, translate.z);
+	ret[3] = vec4(0.f, 0.f, 0.f, 1.f);
 	return ret;
 }
 
 mat4 MakeRotate(vec3 rotation)
 {
 	float x = ToRadian(rotation.x);
-	float y = ToRadian(rotation.x);
-	float z = ToRadian(rotation.y);
+	float y = ToRadian(rotation.y);
+	float z = ToRadian(rotation.z);
 
 	mat4 rx = mat4::identity();
 	rx[0] = vec4(1.f, 0.f,		0.f,		0.f);
@@ -45,7 +45,7 @@ mat4 MakeRotate(vec3 rotation)
 
 	mat4 rz = mat4::identity();
 	rz[0] = vec4(cosf(z),	-sinf(z),	0.f, 0.f);
-	rz[1] = vec4(sinf(z),	cosf(y),	0.f, 0.f);
+	rz[1] = vec4(sinf(z),	cosf(z),	0.f, 0.f);
 	rz[2] = vec4(0.f,		0.f,		1.f, 0.f);
 	rz[3] = vec4(0.f,		0.f,		0.f, 1.f);
 
@@ -62,7 +62,7 @@ mat4 MakePerspective(float ScreenWidth, float ScreenHeight, float Near, float Fa
 	proj[0] = vec4((1.0f / (tanHalfFOV * ar)),	0.f,					0.f,					0.f);
 	proj[1] = vec4(0.f,							(1.0f / (tanHalfFOV)),	0.f,					0.f);
 	proj[2] = vec4(0.f,							0.f,					(-Near - Far) / zRange, (2 * Far * Near) / zRange);
-	proj[3] = vec4(0.f,							0.f,					0.f,					1.f);
+	proj[3] = vec4(0.f,							0.f,					1.f,					0.f);
 
 	return proj;
 }

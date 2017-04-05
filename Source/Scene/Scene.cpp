@@ -64,44 +64,44 @@ SDL_Surface* Scene::Render()
 	for (SceneObject* o : objects)
 	{
 		// Model Matrix, converts to world space
-		Maths::Mat4f scale = Maths::MakeScale(o->scale); 
-		Maths::Mat4f translate = Maths::MakeTranslate(o->position);
-		Maths::Mat4f rotate = Maths::MakeRotate(o->rotation);
+		mat4 scale = MakeScale(o->scale); 
+		mat4 translate = MakeTranslate(o->position);
+		mat4 rotate = MakeRotate(o->rotation);
 
 		// Move objects backward from the camera's position
-		Maths::Mat4f cameraTranslate = Maths::MakeTranslate(Maths::Vec3f(-cameraPosition.X, -cameraPosition.Y, -cameraPosition.Z));
+		mat4 cameraTranslate = MakeTranslate(vec3(-cameraPosition.x, -cameraPosition.y, -cameraPosition.z));
 
 		// Get the camera's rotated basis vectors to rotate everything to camera space.
-		Maths::Vec3f Forward;
-		Maths::Vec3f Right;
-		Maths::Vec3f Up;
-		Maths::GetAxesFromRotation(cameraRotation, Forward, Right, Up);
-		Maths::Mat4f cameraRotate = Maths::MakeLookAt(Forward, Up);
+		vec3 Forward;
+		vec3 Right;
+		vec3 Up;
+		GetAxesFromRotation(cameraRotation, Forward, Right, Up);
+		mat4 cameraRotate = MakeLookAt(Forward, Up);
 
 		// Convert from camera space to perspective projection space
-		Maths::Mat4f projection = Maths::MakePerspective(surf->w, surf->h, 1, 10, cameraFOV);
+		mat4 projection = MakePerspective(surf->w, surf->h, 1, 10, cameraFOV);
 
 		// Convert from projection space (-1, 1) to viewport space
-		Maths::Mat4f viewport = Maths::MakeViewport(surf->w, surf->h);
+		mat4 viewport = MakeViewport(surf->w, surf->h);
 
-		Maths::Mat4f Model = translate * rotate * scale;
-		Maths::Mat4f MVP = viewport * projection * cameraRotate * cameraTranslate * Model;
+		mat4 Model = translate * rotate * scale;
+		mat4 MVP = viewport * projection * cameraRotate * cameraTranslate * Model;
 
 		int nFaces = o->model->faces.size();
 		for (int i = 0; i < nFaces; i++)
 		{
-			Maths::Vec3f trianglePoints[3];
+			vec3 trianglePoints[3];
 			for (int j = 0; j < 3; j++)
 			{
 				// Prepare and run the vertex shader for all the vertices of this triangle
 				o->shader->MVP = MVP;
 				o->shader->M = cameraRotate * cameraTranslate * Model;
 				o->shader->model = o->model;
-				Maths::Vec4f pos = o->shader->Vertex(i, j);
+				vec4 pos = o->shader->Vertex(i, j);
 
 				// Perspective divide
-				pos = Maths::Vec4f(pos.X / pos.W, pos.Y / pos.W, pos.Z / pos.W, 1.0);
-				trianglePoints[j] = Maths::Vec3f(int(pos.X), int(pos.Y), int(pos.Z));
+				pos = vec4(pos.x / pos.w, pos.y / pos.w, pos.z / pos.w, 1.0);
+				trianglePoints[j] = vec3(int(pos.x), int(pos.y), int(pos.z));
 			}
 			DrawTriangle(o->shader, trianglePoints[0], trianglePoints[1], trianglePoints[2]);
 		}
@@ -109,9 +109,9 @@ SDL_Surface* Scene::Render()
 	
 	return surf;
 }
-bool Scene::BarycentricTriangle(Maths::Vec3f* poly)
+bool Scene::BarycentricTriangle(vec3* poly)
 {
-	det = 1.0 / ((poly[1].Y - poly[2].Y) * (poly[0].X - poly[2].X) + (poly[2].X - poly[1].X) * (poly[0].Y - poly[2].Y));
+	det = 1.0 / ((poly[1].y - poly[2].y) * (poly[0].x - poly[2].x) + (poly[2].x - poly[1].x) * (poly[0].y - poly[2].y));
 	if (det == 0)
 	{
 		return false;
@@ -119,60 +119,60 @@ bool Scene::BarycentricTriangle(Maths::Vec3f* poly)
 	return true;
 }
 
-void Scene::BarycentricPoint(Maths::Vec3f* poly, Maths::Vec3f* P, Maths::Vec3f* outbcoords)
+void Scene::BarycentricPoint(vec3* poly, vec3* P, vec3* outbcoords)
 {
-	outbcoords->X = ((poly[1].Y - poly[2].Y) * (P->X - poly[2].X) + (poly[2].X - poly[1].X) * (P->Y - poly[2].Y)) * det;
-	outbcoords->Y = ((poly[2].Y - poly[0].Y) * (P->X - poly[2].X) + (poly[0].X - poly[2].X) * (P->Y - poly[2].Y)) * det;
-	outbcoords->Z = 1 - outbcoords->X - outbcoords->Y;
+	outbcoords->x = ((poly[1].y - poly[2].y) * (P->x - poly[2].x) + (poly[2].x - poly[1].x) * (P->y - poly[2].y)) * det;
+	outbcoords->y = ((poly[2].y - poly[0].y) * (P->x - poly[2].x) + (poly[0].x - poly[2].x) * (P->y - poly[2].y)) * det;
+	outbcoords->z = 1 - outbcoords->x - outbcoords->y;
 }
 
-void Scene::DrawTriangle(Shader* shader, Maths::Vec3f v1, Maths::Vec3f v2, Maths::Vec3f v3)
+void Scene::DrawTriangle(Shader* shader, vec3 v1, vec3 v2, vec3 v3)
 {
 	// Calculate a bounding box for this triangle
-	Maths::Vec2f bbmin(surf->w, surf->h);
-	Maths::Vec2f bbmax(0, 0);
-	Maths::Vec2f clamp(surf->w, surf->h);
-	Maths::Vec3f points[3] = { v1, v2, v3 };
+	vec2 bbmin(surf->w, surf->h);
+	vec2 bbmax(0, 0);
+	vec2 clamp(surf->w, surf->h);
+	vec3 points[3] = { v1, v2, v3 };
 	for (int i = 0; i < 3; i++)
 	{
-		bbmin.X = std::max(0.0, (double)std::min(bbmin.X, points[i].X));
-		bbmin.Y = std::max(0.0, (double)std::min(bbmin.Y, points[i].Y));
-		bbmax.Y = std::min(clamp.Y, std::max(bbmax.Y, points[i].Y));
-		bbmax.X = std::min(clamp.X, std::max(bbmax.X, points[i].X));
+		bbmin.x = std::max(0.0, (double)std::min(bbmin.x, points[i].x));
+		bbmin.y = std::max(0.0, (double)std::min(bbmin.y, points[i].y));
+		bbmax.y = std::min(clamp.y, std::max(bbmax.y, points[i].y));
+		bbmax.x = std::min(clamp.x, std::max(bbmax.x, points[i].x));
 	}
 
 	// Looping over every pixel in the bounding box
-	Maths::Vec3f P;
-	Maths::Vec3f bc;
+	vec3 P;
+	vec3 bc;
 	if (!BarycentricTriangle(points))
 	{
 		return;
 	}
-	for (P.X = bbmin.X; P.X <= bbmax.X; P.X++) {
-		for (P.Y = bbmin.Y; P.Y <= bbmax.Y; P.Y++) {
+	for (P.x = bbmin.x; P.x <= bbmax.x; P.x++) {
+		for (P.y = bbmin.y; P.y <= bbmax.y; P.y++) {
 			// If any of the barycentric coordinates are negative, this pixel is not inside the triangle
 			BarycentricPoint(points, &P, &bc);
-			if (bc.X < 0 || bc.Y < 0 || bc.Z < 0) continue;
-			P.Z = 0;
-			P.Z += points[0].Z * bc.X;
-			P.Z += points[1].Z * bc.Y;
-			P.Z += points[2].Z * bc.Z;
-			if (P.Y > surf->h - 1 || P.X > surf->w - 1) continue;
+			if (bc.x < 0 || bc.y < 0 || bc.z < 0) continue;
+			P.z = 0;
+			P.z += points[0].z * bc.x;
+			P.z += points[1].z * bc.y;
+			P.z += points[2].z * bc.z;
+			if (P.y > surf->h - 1 || P.x > surf->w - 1) continue;
 
-			int id = int(P.X) + int(P.Y) * surf->w;
-			if (zBuffer[id] > P.Z)
+			int id = int(P.x) + int(P.y) * surf->w;
+			if (zBuffer[id] > P.z)
 			{
-				zBuffer[id] = P.Z;
+				zBuffer[id] = P.z;
 
 				// Call the fragment shader for each pixel, giving it the barycentric coordinates so it can interpolate vertex data.
-				Maths::Vec3f cVec;
+				vec3 cVec;
 				if (shader->Fragment(bc, cVec))
 				{
-					Uint32 colour = SDL_MapRGB(surf->format, cVec.X, cVec.Y, cVec.Z);
-					SetSurfacePixel(surf, P.X, P.Y, colour);
+					Uint32 colour = SDL_MapRGB(surf->format, cVec.x, cVec.y, cVec.z);
+					SetSurfacePixel(surf, P.x, P.y, colour);
 				}
 				// Visualise Depth buffer 
-				//SetSurfacePixel(surf, P.X, P.Y, SDL_MapRGB(surf->format, abs(P.Z)*1, abs(P.Z)*1, abs(P.Z)*1));
+				//SetSurfacePixel(surf, P.x, P.y, SDL_MapRGB(surf->format, abs(P.z)*1, abs(P.z)*1, abs(P.z)*1));
 			}
 		}
 	}

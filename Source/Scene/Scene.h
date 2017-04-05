@@ -16,8 +16,8 @@ public:
 	// Note, the scene takes control of the newObject lifetime. Do not delete it, the Scene will do it.
 	void AddObject(SceneObject* newObject);
 
-	Maths::Vec3f cameraPosition;
-	Maths::Vec3f cameraRotation;
+	vec3 cameraPosition;
+	vec3 cameraRotation;
 	float cameraFOV = 60.f;
 
 private:
@@ -31,12 +31,12 @@ private:
 	std::vector<SceneObject*> objects;
 
 	// Calculate barycentric coordinates for a given point P inside a triangle defined by Poly, returning bcoords.
-	bool BarycentricTriangle(Maths::Vec3f *poly);
-	void BarycentricPoint(Maths::Vec3f *poly, Maths::Vec3f* P, Maths::Vec3f* bcoords);
+	bool BarycentricTriangle(vec3 *poly);
+	void BarycentricPoint(vec3 *poly, vec3* P, vec3* bcoords);
 	double det;
 
 	void DrawLine(SDL_Surface* surf, int x0, int y0, int x1, int y1, Uint32 Colour);
-	void DrawTriangle(Shader* shader, Maths::Vec3f v1, Maths::Vec3f v2, Maths::Vec3f v3);
+	void DrawTriangle(Shader* shader, vec3 v1, vec3 v2, vec3 v3);
 
 	void SetSurfacePixel(SDL_Surface* surf, int x, int y, Uint32 Colour);
 };

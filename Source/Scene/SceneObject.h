@@ -12,8 +12,8 @@ public:
 	
 	Shader* shader;
 
-	Maths::Vec3f position;
-	Maths::Vec3f scale;
-	Maths::Vec3f rotation;
+	vec3 position;
+	vec3 scale;
+	vec3 rotation;
 };
 

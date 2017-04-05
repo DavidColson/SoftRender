@@ -37,23 +37,23 @@ int main(int argc, char* argv[]) {
 
 	// Create a scene and set the camera up
 	Scene* myScene = new Scene(1000, 600);
-	myScene->cameraPosition = Maths::Vec3f(-4.f, 4.f, -6.f);
-	myScene->cameraRotation = Maths::Vec3f(30.f, -45.f, 0.f);
+	myScene->cameraPosition = vec3(4.f, 4.f, -6.f);
+	myScene->cameraRotation = vec3(30.f, 45.f, 0.f);
 
 	// Make a monkey object, loading it's model and creating a shader for it.
 	Model* monkeyModel = new Model("Assets/monkey.obj");
 	SceneObject* monkey = new SceneObject(monkeyModel);
 	FlatShader* monkeyShader = new FlatShader();
 	monkey->shader = monkeyShader;
-	monkey->scale = Maths::Vec3f(3.f, 3.f, 3.f);
+	monkey->scale = vec3(3.f, 3.f, 3.f);
 	//myScene->AddObject(monkey);
 
 	Model* fireHydrantModel = new Model("Assets/Chest.obj");
 	SceneObject* fireHydrant = new SceneObject(fireHydrantModel);
 	fireHydrant->shader = new FlatShader();
-	fireHydrant->position = Maths::Vec3f(0, 0, -2);
-	fireHydrant->rotation = Maths::Vec3f(0, 5, 0);
-	fireHydrant->scale = Maths::Vec3f(3, 3, 3);
+	fireHydrant->position = vec3(0, 0, 0);
+	fireHydrant->rotation = vec3(0, 5, 0);
+	fireHydrant->scale = vec3(3, 3, 3);
 	myScene->AddObject(fireHydrant);
 
 	// Render the scene and make a fullscreen texture from it that we can put on the screen.

@@ -1,32 +1,32 @@
 #include "FlatShader.h"
 
-Maths::Vec4f FlatShader::Vertex(int iFace, int nthVert)
+vec4 FlatShader::Vertex(int iFace, int nthVert)
 {
-	Maths::Vec3f vposition = model->vert(iFace, nthVert);
-	Maths::Vec4f projectionSpace = MVP * Maths::Vec4f(vposition, 1);
+	vec3 vposition = model->vert(iFace, nthVert);
+	vec4 projectionSpace = MVP * embed<4>(vposition);
 
 	// Calculate normal to this face
-	Maths::Vec3f wFace[3];
+	vec3 wFace[3];
 	for (int i = 0; i < 3; i++)
 	{
-		Maths::Vec4f world = M.Transpose().Inverse() * Maths::Vec4f(model->vert(iFace, i), 1.f);
-		wFace[i] = Maths::Vec3f(world.X, world.Y, world.Z);
+		vec4 world = M.invert_transpose() * embed<4>(model->vert(iFace, i));
+		wFace[i] = proj<3>(world);
 	}
-	Maths::Vec3f faceNormal = Maths::Cross((wFace[1] - wFace[0]), (wFace[2] - wFace[0]));
+	vec3 faceNormal = cross((wFace[1] - wFace[0]), (wFace[2] - wFace[0]));
 
-	Maths::Vec4f lightDirection = Maths::Vec4f(0, 0, 1, 0);
+	vec4 lightDirection = vec4(0, 0, 1, 0);
 	lightDirection = M * lightDirection;
-	Maths::Vec3f light = Maths::Vec3f(lightDirection.X, lightDirection.Y, lightDirection.Z);
+	vec3 light = proj<3>(lightDirection);
 
-	faceIntensity = Maths::Dot(Maths::Normalize(faceNormal), Maths::Normalize(light)) * 0.8;
+	faceIntensity = (faceNormal.normalise() * light.normalise()) * 0.8;
 	if (faceIntensity < 0)
 		faceIntensity = 0;
 
 	return projectionSpace;
 }
 
-bool FlatShader::Fragment(Maths::Vec3f barycentric, Maths::Vec3f &Color)
+bool FlatShader::Fragment(vec3 barycentric, vec3 &Color)
 {
-	Color = Maths::Vec3f(faceIntensity * 255, faceIntensity * 122, faceIntensity * 122);
+	Color = vec3(faceIntensity * 255, faceIntensity * 122, faceIntensity * 122);
 	return true;
 }

@@ -58,7 +58,6 @@ SDL_Surface* Scene::Render()
 			SetSurfacePixel(surf, x, y, 0xFFED9564);
 		}
 	}
-
 	// Render all the objects
 	// TODO: Sort by model depth
 	for (SceneObject* o : objects)
@@ -95,8 +94,8 @@ SDL_Surface* Scene::Render()
 			{
 				// Prepare and run the vertex shader for all the vertices of this triangle
 				o->shader->MVP = MVP;
-				o->shader->M = cameraRotate * cameraTranslate * Model;
-				o->shader->model = o->model;
+				o->shader->M = Model;
+				o->shader->model = o->model; 
 				vec4 pos = o->shader->Vertex(i, j);
 
 				// Perspective divide

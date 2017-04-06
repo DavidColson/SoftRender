@@ -286,6 +286,7 @@ typedef vec<3, float> vec3;
 typedef vec<3, int>   vec3i;
 typedef vec<4, float> vec4;
 typedef mat<4, 4, float> mat4;
+typedef mat<3, 3, float> mat3;
 
 mat4 MakeScale(vec3 Scaling);
 

@@ -2,6 +2,7 @@
 
 #include "SDL.h"
 #include "Model.h"
+#include "Texture.h"
 #include "SceneObject.h"
 #include <vector>
 

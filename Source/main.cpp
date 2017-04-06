@@ -8,6 +8,8 @@
 #include "Model.h"
 #include "FlatShader.h"
 #include "SmoothShader.h"
+#include "TextureShader.h"
+#include "Texture.h"
 
 int main(int argc, char* argv[]) {
 
@@ -34,25 +36,26 @@ int main(int argc, char* argv[]) {
 	// We're using a basic SDL renderer to put our framebuffer on the screen
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-
 	// Create a scene and set the camera up
 	Scene* myScene = new Scene(1000, 600);
-	myScene->cameraPosition = vec3(4.f, 4.f, -6.f);
+	myScene->cameraPosition = vec3(4.0, 4.f, 0.f);
 	myScene->cameraRotation = vec3(30.f, 45.f, 0.f);
 
 	// Make a monkey object, loading it's model and creating a shader for it.
 	Model* monkeyModel = new Model("Assets/monkey.obj");
 	SceneObject* monkey = new SceneObject(monkeyModel);
-	FlatShader* monkeyShader = new FlatShader();
+	SmoothShader* monkeyShader = new SmoothShader();
 	monkey->shader = monkeyShader;
 	monkey->scale = vec3(3.f, 3.f, 3.f);
 	//myScene->AddObject(monkey);
 
 	Model* fireHydrantModel = new Model("Assets/Chest.obj");
 	SceneObject* fireHydrant = new SceneObject(fireHydrantModel);
-	fireHydrant->shader = new FlatShader();
-	fireHydrant->position = vec3(0, 0, 0);
-	fireHydrant->rotation = vec3(0, 5, 0);
+	TextureShader* diffuse = new TextureShader();
+	diffuse->diffuse = new Texture("Assets/diffuse.tga");
+	fireHydrant->shader = new SmoothShader();
+	fireHydrant->position = vec3(0, 0, 4);
+	fireHydrant->rotation = vec3(0, 180, 0);
 	fireHydrant->scale = vec3(3, 3, 3);
 	myScene->AddObject(fireHydrant);
 
@@ -64,7 +67,7 @@ int main(int argc, char* argv[]) {
 
 	while (true)
 	{
-		SDL_Event test_event;
+		SDL_Event test_event; 
 		while (SDL_PollEvent(&test_event))
 		{
 			switch (test_event.type)

@@ -11,7 +11,9 @@ Texture::Texture()
 
 Texture::Texture(const char* filename)
 {
+	stbi_set_flip_vertically_on_load(true);
 	data = stbi_load(filename, &x, &y, &n, 0);
+	
 	assert(data != NULL);
 }
 

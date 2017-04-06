@@ -9,6 +9,9 @@ public:
 	~Texture();
 
 	vec3 GetPixel(int X, int Y);
+	
+	int Width() { return x; }
+	int Height() { return y; }
 
 private:
 	int x, y, n;
